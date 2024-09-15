@@ -4,6 +4,7 @@ value - A string representing the value of the HTML tag (e.g. the text inside a 
 children - A list of HTMLNode objects representing the children of this node
 props - A dictionary of key-value pairs representing the attributes of the HTML tag. For example, a link (<a> tag) might have {"href": "https://www.google.com"}
 '''
+from textnode import TextNode
 
 
 class HTMLNode:
@@ -39,8 +40,11 @@ class LeafNode(HTMLNode):
             return self.value
         return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"LeafNode({self.tag}, {self.value}, {self.props})"
+
+    def __eq__(self, other: object) -> bool:
+        return self.tag == other.tag and self.value == other.value and self.props == other.props
 
 
 class ParentNode(HTMLNode):
@@ -61,3 +65,22 @@ class ParentNode(HTMLNode):
 
     def __repr__(self):
         return f"ParentNode({self.tag}, children: {self.children}, {self.props})"
+
+
+def text_to_html_node(text_node: TextNode) -> LeafNode:
+    text_types = ['text', 'bold', 'italic', 'code', 'link', 'image']
+    if text_node.text_type not in text_types:
+        raise Exception("Text type not valid")
+
+    if text_node.text_type == 'text':
+        return LeafNode(None, text_node.text)
+    elif text_node.text_type == 'bold':
+        return LeafNode('b', text_node.text)
+    elif text_node.text_type == 'italic':
+        return LeafNode('i', text_node.text)
+    elif text_node.text_type == 'code':
+        return LeafNode('code', text_node.text)
+    elif text_node.text_type == 'link':
+        return LeafNode('a', text_node.text, {'href': text_node.url})
+    else:
+        return LeafNode('img', None, {'src': text_node.url, 'alt': text_node.text})

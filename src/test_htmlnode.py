@@ -1,6 +1,6 @@
 import unittest
 
-from htmlnode import HTMLNode, LeafNode, ParentNode
+from htmlnode import HTMLNode, LeafNode, ParentNode, TextNode, text_to_html_node
 
 
 class TestHTMLNode(unittest.TestCase):
@@ -87,6 +87,51 @@ class TestParentNode(unittest.TestCase):
             node.to_html(),
             "<h2><b>Bold text</b>Normal text<i>italic text</i>Normal text</h2>",
         )
+
+
+class TestTextToHtmlNode(unittest.TestCase):
+
+    def test_text_to_html_node_plain_text(self):
+        text_node = TextNode('Hello', 'text')
+        expected = LeafNode(None, 'Hello')
+        result = text_to_html_node(text_node)
+        self.assertEqual(result, expected)
+
+    def test_text_to_html_node_bold_text(self):
+        text_node = TextNode('Bold Text', 'bold')
+        expected = LeafNode('b', 'Bold Text')
+        result = text_to_html_node(text_node)
+        self.assertEqual(result, expected)
+
+    def test_text_to_html_node_italic_text(self):
+        text_node = TextNode('Italic Text', 'italic')
+        expected = LeafNode('i', 'Italic Text')
+        result = text_to_html_node(text_node)
+        self.assertEqual(result, expected)
+
+    def test_text_to_html_node_code_text(self):
+        text_node = TextNode('print("Hello World")', 'code')
+        expected = LeafNode('code', 'print("Hello World")')
+        result = text_to_html_node(text_node)
+        self.assertEqual(result, expected)
+
+    def test_text_to_html_node_link_text(self):
+        text_node = TextNode('Boot.dev', 'link', url='https://boot.dev.com')
+        expected = LeafNode('a', 'Boot.dev', {'href': 'https://boot.dev.com'})
+        result = text_to_html_node(text_node)
+        self.assertEqual(result, expected)
+
+    def test_text_to_html_node_image_text(self):
+        text_node = TextNode( 'Logo', 'image', url='https://boot.dev/logo.png')
+        expected = LeafNode('img', None, {'src': 'https://boot.dev/logo.png', 'alt': 'Logo'})
+        result = text_to_html_node(text_node)
+        self.assertEqual(result, expected)
+
+    def test_text_to_html_node_invalid_text_type(self):
+        text_node = TextNode('unsupported', 'Text')
+        with self.assertRaises(Exception) as context:
+            text_to_html_node(text_node)
+        self.assertEqual(str(context.exception), "Text type not valid")
 
 
 if __name__ == "__main__":
